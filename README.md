@@ -168,3 +168,219 @@ Hi username! You've successfully authenticated, but GitHub does not provide shel
 ### Docker і Docker Compose
 
 Документація для налаштування Docker і Docker Compose буде додана пізніше.
+
+---
+
+## Повний сценарій для зручного дебагу на Windows 10
+
+Нижче — практичний сценарій “під ключ” для локального дебагу проєкту на Win10 з двома режимами:
+1. **Рекомендований:** Docker Compose (найшвидший старт).
+2. **Розробницький:** backend у venv + окремо Postgres (зручно для breakpoints у Python IDE).
+
+> Важливо: у цьому репозиторії одночасно є веб-частина на FastAPI (основний застосунок) і окремий Flet-клієнт у папці `frontend`.
+
+### 1) Підготовка Windows 10
+
+#### 1.1. Встановити інструменти
+- **Git for Windows** (з Git Bash)
+- **Docker Desktop** (з увімкненим WSL2 backend)
+- **Python 3.12+** (або 3.11+) для локального запуску без Docker
+- Опційно: **VS Code** + розширення Python
+
+#### 1.2. Клон репозиторію
+```bash
+git clone <URL_ВАШОГО_РЕПО>
+cd ProShieldCOPY
+```
+
+---
+
+### 2) Швидкий дебаг через Docker Compose (рекомендовано)
+
+Цей режим автоматично:
+- піднімає PostgreSQL,
+- запускає міграції Alembic,
+- стартує FastAPI на `http://localhost:8000`.
+
+#### 2.1. Запуск
+```bash
+docker compose -f docker-compose-local.yml up --build
+```
+
+#### 2.2. Що перевірити
+- API health: `http://localhost:8000/api/health`
+- Swagger UI: `http://localhost:8000/docs`
+- Головна HTML-сторінка: `http://localhost:8000/`
+
+#### 2.3. Перегляд логів (окрема вкладка терміналу)
+```bash
+docker compose -f docker-compose-local.yml logs -f backend
+docker compose -f docker-compose-local.yml logs -f database
+```
+
+#### 2.4. Перезапуск лише backend після змін
+```bash
+docker compose -f docker-compose-local.yml restart backend
+```
+
+> У локальному compose увімкнено `--reload`, а папка `./backend` змонтована у контейнер — більшість змін підхоплюється автоматично.
+
+#### 2.5. Зупинка
+```bash
+docker compose -f docker-compose-local.yml down
+```
+
+Скинути БД повністю (разом з volume):
+```bash
+docker compose -f docker-compose-local.yml down -v
+```
+
+---
+
+### 3) Глибокий дебаг backend у VS Code/PyCharm (без Docker для Python)
+
+Цей режим зручний для breakpoint-ів у Python-коді.
+
+#### 3.1. Підняти тільки PostgreSQL
+```bash
+docker run --name proshield-pg \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_DB=postgres \
+  -p 5432:5432 \
+  -d postgres:16.6
+```
+
+#### 3.2. Створити venv та встановити залежності backend
+```bash
+cd backend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+#### 3.3. Критично важливі env-змінні
+У цьому проєкті Alembic і застосунок читають **різні** змінні:
+- Alembic: `DB_CONNECTION_STRING`
+- App: `DATABASE_URL`
+
+В PowerShell:
+```powershell
+$env:DB_CONNECTION_STRING = "postgresql://postgres:postgres@localhost:5432/postgres"
+$env:DATABASE_URL = "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres"
+```
+
+У CMD:
+```cmd
+set DB_CONNECTION_STRING=postgresql://postgres:postgres@localhost:5432/postgres
+set DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/postgres
+```
+
+#### 3.4. Прогнати міграції
+```bash
+alembic upgrade head
+```
+
+#### 3.5. Запуск backend у debug-friendly режимі
+```bash
+uvicorn proshield.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+#### 3.6. VS Code launch-конфіг (опційно)
+Створіть `.vscode/launch.json`:
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "ProShield FastAPI (Uvicorn)",
+      "type": "python",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": [
+        "proshield.main:app",
+        "--reload",
+        "--host", "0.0.0.0",
+        "--port", "8000"
+      ],
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "DB_CONNECTION_STRING": "postgresql://postgres:postgres@localhost:5432/postgres",
+        "DATABASE_URL": "postgresql+psycopg2://postgres:postgres@localhost:5432/postgres"
+      },
+      "justMyCode": true
+    }
+  ]
+}
+```
+
+---
+
+### 4) Запуск Flet frontend на Windows 10 (опційно)
+
+Flet-клієнт звертається до backend за `http://localhost:8000`, тому спочатку запустіть backend.
+
+```bash
+cd frontend
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements.txt
+python app/main.py
+```
+
+---
+
+### 5) Типовий щоденний workflow дебагу (Win10)
+
+1. Запустити БД + API (через Docker Compose або локально).
+2. Відкрити `http://localhost:8000/docs`.
+3. Відтворити проблему через Swagger або веб-сторінку.
+4. Поставити breakpoints у `backend/proshield/api/routes/*` або `crud/*`.
+5. Перевірити SQL/міграції, якщо проблема у даних.
+6. Перезапустити сервіси/очистити volume БД при конфлікті схем.
+
+---
+
+### 6) Швидка діагностика проблем
+
+#### Проблема: `alembic upgrade head` не працює
+- Перевірте, що Postgres доступний на `localhost:5432`.
+- Перевірте `DB_CONNECTION_STRING`.
+
+#### Проблема: API не піднімається
+- Перевірте `DATABASE_URL`.
+- Подивіться traceback у логах/терміналі.
+
+#### Проблема: дані в таблицях відсутні
+- На старті app виконує preload довідників у lifespan.
+- Переконайтесь, що застосунок дійсно стартував після міграцій.
+
+#### Проблема: порт зайнятий
+```powershell
+netstat -ano | findstr :8000
+netstat -ano | findstr :5432
+```
+Завершити процес:
+```powershell
+taskkill /PID <PID> /F
+```
+
+---
+
+### 7) Корисні команди для Win10
+
+Оновити збірку контейнерів після зміни залежностей:
+```bash
+docker compose -f docker-compose-local.yml build --no-cache
+```
+
+Зайти в контейнер backend:
+```bash
+docker compose -f docker-compose-local.yml exec backend sh
+```
+
+Перевірити міграції в контейнері:
+```bash
+docker compose -f docker-compose-local.yml exec backend alembic current
+docker compose -f docker-compose-local.yml exec backend alembic history
+```
