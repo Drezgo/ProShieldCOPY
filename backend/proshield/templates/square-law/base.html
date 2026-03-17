@@ -118,17 +118,11 @@
         <a class="navbar-brand" href="{{ request.url_for('home_view') }}">
           <img
             src="{{ request.url_for('static', path='assets/logo-ldu.png') }}"
-            width="87"
-            height="54"
-          />
-          <img
-            src="{{ request.url_for('static', path='assets/logo.png') }}"
-            width="54"
-            height="54"
+            style="height: 54px; width: auto;"
           />
         </a>
         <h1 class="navbar-brand text-center w-100 collapse navbar-collapse">
-          ЛЬВІВСЬКИЙ ДЕРЖАВНИЙ УНІВЕРСИТЕТ БЕЗПЕКИ ЖИТТЄДІЯЛЬНОСТІ
+          <span style="font-size:1.5rem; font-weight:700; letter-spacing:2px;">FORTECH</span>
         </h1>
 
         <button
@@ -140,15 +134,53 @@
           <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <div class="collapse navbar-collapse col-md-4" id="navbarNav">
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <a class="nav-link" href="{{ request.url_for('home_view') }}"
                 >Модулі розрахунку</a
               >
             </li>
+
+            <li class="nav-item dropdown">
+              <a
+                class="nav-link dropdown-toggle"
+                href="#"
+                id="documentsDropdown"
+                role="button"
+                data-bs-toggle="dropdown"
+                aria-expanded="false"
+              >
+                Документи
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="documentsDropdown">
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ request.url_for('static', path='pdf/tz.pdf') }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Технічне завдання
+                  </a>
+                </li>
+                <li>
+                  <a
+                    class="dropdown-item"
+                    href="{{ request.url_for('static', path='pdf/dbn.pdf') }}"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    ДБН В.2.2-5:2023
+                  </a>
+                </li>
+              </ul>
+            </li>
+
             <li class="nav-item">
-              <a class="nav-link" href="#">Про сторінку</a>
+              <a class="nav-link" href="{{ request.url_for('about_view') }}"
+                >Про сторінку</a
+              >
             </li>
           </ul>
         </div>

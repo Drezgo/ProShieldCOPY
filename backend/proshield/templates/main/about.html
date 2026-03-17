@@ -1,0 +1,377 @@
+{% extends "main/base.html" %} {% block title %}Про сторінку{% endblock %} {% block content %}
+
+<style>
+  /* ── Hero ── */
+  .about-hero {
+    background: linear-gradient(135deg, #1a3a5c 0%, #2563a8 60%, #3b82c4 100%);
+    border-radius: 16px;
+    padding: 56px 40px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2.5rem;
+  }
+
+  .about-hero::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    right: -60px;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+  }
+
+  .about-hero::after {
+    content: "";
+    position: absolute;
+    bottom: -80px;
+    left: -40px;
+    width: 220px;
+    height: 220px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 50%;
+  }
+
+  .about-hero h2 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  .about-hero .lead {
+    opacity: 0.88;
+    font-size: 1.05rem;
+    max-width: 560px;
+  }
+
+  .about-hero .badge-tag {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    border-radius: 50px;
+    padding: 4px 14px;
+    font-size: 0.78rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* ── Feature cards ── */
+  .feature-card {
+    border: none;
+    border-radius: 14px;
+    padding: 28px 24px;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(30, 60, 120, 0.08);
+    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    height: 100%;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 28px rgba(30, 60, 120, 0.14);
+  }
+
+  .feature-card .icon-wrap {
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .feature-card h5 {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #1a2e4a;
+  }
+
+  .feature-card p,
+  .feature-card li {
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.65;
+  }
+
+  .feature-card ul {
+    padding-left: 0;
+    list-style: none;
+    margin: 0;
+  }
+
+  .feature-card ul li {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .feature-card ul li:last-child {
+    border-bottom: none;
+  }
+
+  .feature-card ul li::before {
+    content: "✓";
+    color: #2563a8;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  /* icon bg colors */
+  .ic-blue {
+    background: #eff6ff;
+    color: #2563a8;
+  }
+
+  .ic-green {
+    background: #f0fdf4;
+    color: #16a34a;
+  }
+
+  .ic-orange {
+    background: #fff7ed;
+    color: #ea580c;
+  }
+
+  .ic-purple {
+    background: #faf5ff;
+    color: #7c3aed;
+  }
+
+  .ic-teal {
+    background: #f0fdfa;
+    color: #0d9488;
+  }
+
+  /* ── Section label ── */
+  .section-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #2563a8;
+    margin-bottom: 6px;
+  }
+
+  .section-title {
+    font-size: 1.45rem;
+    font-weight: 700;
+    color: #1a2e4a;
+    margin-bottom: 28px;
+  }
+
+  /* ── Timeline ── */
+  .timeline-wrap {
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(30, 60, 120, 0.08);
+    padding: 36px 32px;
+    margin-top: 2.5rem;
+  }
+
+  .timeline {
+    display: flex;
+    gap: 0;
+    position: relative;
+    counter-reset: stage;
+  }
+
+  .timeline::before {
+    content: "";
+    position: absolute;
+    top: 26px;
+    left: 13%;
+    right: 13%;
+    height: 3px;
+    background: linear-gradient(90deg, #2563a8, #3b82c4, #60a5fa, #93c5fd);
+    border-radius: 2px;
+    z-index: 0;
+  }
+
+  .tl-step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .tl-dot {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a3a5c, #2563a8);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    box-shadow: 0 4px 12px rgba(37, 99, 168, 0.3);
+  }
+
+  .tl-step strong {
+    display: block;
+    font-size: 0.85rem;
+    color: #1a2e4a;
+    margin-bottom: 4px;
+  }
+
+  .tl-step p {
+    font-size: 0.8rem;
+    color: #6b7280;
+    margin: 0;
+    padding: 0 8px;
+  }
+
+  /* ── Contact card ── */
+  .contact-card {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e8f4fd 100%);
+    border: 1px solid #bfdbfe;
+    border-radius: 14px;
+    padding: 28px 24px;
+  }
+
+  .contact-card a {
+    color: #2563a8;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .contact-card a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<section class="py-4">
+
+  <!-- Hero -->
+  <div class="about-hero">
+    <div class="badge-tag"><i class="fa fa-shield-halved me-1"></i>Fortech</div>
+    <h2>Про систему розрахунку</h2>
+    <p class="lead">
+      Інструмент для визначення коефіцієнта захисту захисних споруд цивільного захисту.
+      Покрокові розрахунки, нормативна база, зрозумілі результати.
+    </p>
+  </div>
+
+  <!-- Top 2 cards -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="feature-card">
+        <div class="icon-wrap ic-blue"><i class="fa fa-bullseye"></i></div>
+        <h5>Призначення</h5>
+        <p>
+          Система містить інструменти для розрахунків та довідкові матеріали.
+          Ключові можливості, пояснення логіки та призначення кожного модуля зібрані в одному місці.
+        </p>
+        <ul>
+          <li>Огляд модулів розрахунку</li>
+          <li>Контекст і призначення формул</li>
+          <li>Приклади застосування</li>
+          <li>Корисні матеріали й посилання</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-6">
+      <div class="feature-card">
+        <div class="icon-wrap ic-green"><i class="fa fa-gears"></i></div>
+        <h5>Як це працює</h5>
+        <p>
+          Дані вводяться у формах, після чого система поетапно виконує обчислення,
+          перевіряє коректність введень і формує підсумкові значення.
+          Результати відображаються у зрозумілому форматі з поясненнями.
+        </p>
+        <p class="mb-0" style="margin-top:10px;">
+          Розрахунки виконуються послідовно, а логіка поділена на кроки, щоб
+          зменшити ризик помилок і спростити перевірку.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom 3 cards -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="feature-card">
+        <div class="icon-wrap ic-purple"><i class="fa fa-layer-group"></i></div>
+        <h5>Ключові розділи</h5>
+        <ul>
+          <li>Модулі розрахунку</li>
+          <li>Документи та нормативи</li>
+          <li>Формули та пояснення</li>
+          <li>Підсумкові звіти</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="feature-card">
+        <div class="icon-wrap ic-orange"><i class="fa fa-star"></i></div>
+        <h5>Особливості</h5>
+        <ul>
+          <li>Адаптивний дизайн для мобільних пристроїв</li>
+          <li>Покрокова перевірка даних</li>
+          <li>Повернення до попередніх кроків</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="contact-card h-100 d-flex flex-column">
+        <div class="icon-wrap ic-teal mb-3"
+          style="width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;">
+          <i class="fa fa-envelope"></i>
+        </div>
+        <h5 style="font-weight:700;color:#1a2e4a;margin-bottom:10px;">Контакти</h5>
+        <p style="font-size:0.9rem;color:#555;flex:1;">
+          Якщо маєте питання або пропозиції — звертайтесь до команди підтримки.
+        </p>
+        <p class="mb-0" style="font-size:0.9rem;">
+          <i class="fa fa-at me-2 text-primary"></i>
+          <a href="mailto:andriy.havryliuk@gmail.com">andriy.havryliuk@gmail.com</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Timeline -->
+  <div class="timeline-wrap">
+    <div class="section-label">Розробка</div>
+    <div class="section-title">Міні-таймлайн проєкту</div>
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="tl-dot">1</div>
+        <strong>Збір вимог</strong>
+        <p>Базові дані та вимоги до системи</p>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">2</div>
+        <strong>Реалізація</strong>
+        <p>Розробка модулів розрахунку</p>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">3</div>
+        <strong>Верифікація</strong>
+        <p>Перевірка правильності результатів</p>
+      </div>
+      <div class="tl-step">
+        <div class="tl-dot">4</div>
+        <strong>Реліз</strong>
+        <p>Фінальні налаштування та запуск</p>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
